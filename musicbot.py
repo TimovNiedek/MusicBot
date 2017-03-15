@@ -186,7 +186,7 @@ class ResponseGenerator:
                 else:
                     response = random.choice(GREETING_RESPONSES)
                     send_message(response, chat)
-                    send_message("I am MusicBot 1.0. I can recommend some artist if you tell me what you like.")
+                    send_message("I am MusicBot 1.0. I can recommend some artist if you tell me what you like.", chat)
                     response = random.choice(ARTISTS_QUESTION)
                     send_message(response, chat)
             elif (artists):
@@ -286,7 +286,7 @@ class ResponseGenerator:
                     return "I am MusicBot 1.0. I can help you with recommending artists. " + random.choice(ARTISTS_QUESTION)
                 elif ('how' in adverbs):
                     # Question is asking how the bot is doing
-                    return "I am doing great, how are you? 😊 " + random.choice(ARTISTS_QUESTION)
+                    return "I am doing great, how are you? 😊"
                 else:
                     return random.choice(RESPONSE_TO_UNKNOWN_QUESTION)
             elif (any(v in verbs for v in ['know','recognize','recognise','think'])):
@@ -329,15 +329,17 @@ class ResponseGenerator:
         related = []
         for name in input_artist_names:
             artist = self.get_artist(name, sp)
+            related_for_artist = []
             if (artist):
                 artist_id = artist['id']
                 related_artists = sp.artist_related_artists(artist_id)['artists'][0:10]
                 if (len(related_artists) > 0):
                     for artist in related_artists:
                         info = (artist['name'], artist['popularity'])
-                        print(info)
-                        related.append(info)
-                        print(related)
+                        if (not (info in related_for_artist or info in related or artist['name'] in input_artist_names)):
+                            related_for_artist.append(info)
+                sorted_artists = sorted(related_for_artist, key=lambda tup: tup[1])
+                related.extend(sorted_artists[:2])
         if (len(related) == 0):
             if (len(input_artist_names) == 1):
                 return "I don't know the artist " + input_artist_names[0] + " 🙁 It's probably too underground..",
